@@ -11,7 +11,7 @@ pub fn uninstall(config: Config) {
 
 // list
 pub fn ls(config: Config) {
-
+    // https://nodejs.org/dist/index.json
 }
 
 pub fn _use(config: Config) {
