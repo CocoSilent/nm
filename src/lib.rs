@@ -1,3 +1,7 @@
+mod nodejs_manage;
+
+use nodejs_manage::nodejs_api;
+
 pub struct Config {
     exe_path: String,
     param1: String,
