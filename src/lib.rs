@@ -32,5 +32,9 @@ impl Config {
 }
 
 pub fn run(config: Config) {
-
+    if config.param1 == "ls" {
+        nodejs_api::ls(config);
+    } else {
+        println!("{}命令不支持", config.param1);
+    }
 }
