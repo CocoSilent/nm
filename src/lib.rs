@@ -1,5 +1,7 @@
 mod nodejs_manage;
 
+use std::error::Error;
+
 use nodejs_manage::nodejs_api;
 
 pub struct Config {
@@ -31,10 +33,12 @@ impl Config {
     }
 }
 
-pub fn run(config: Config) {
-    if config.param1 == "ls" {
-        nodejs_api::ls(config);
+pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
+    if config.param1 == "install" {
+        nodejs_api::install(config);
+        Ok(())
     } else {
         println!("{}命令不支持", config.param1);
+        Ok(())
     }
 }
