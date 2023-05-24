@@ -4,16 +4,36 @@ use serde::{Deserialize};
 use crate::Config;
 
 #[derive(Debug, Deserialize)]
-struct version_info {
+// https://nodejs.org/dist/index.json返回的结构
+struct Version_info {
     version: String,
+}
+
+// 版本号
+struct Version_number {
+    one: String,
+    two: String,
+    three: String,
+    version: String,
+}
+
+impl Version_number {
+    fn parse(version: String) -> Result<Version_number, String> {
+        let arr: Vec<_> = version.split('.').collect();
+        if arr.len() > 3 {
+            let str = format!("版本号：{version},格式不正确");
+            return Err(str);
+        }
+        Ok(Version_number { one: String::new(), two: String::new(), three: String::new(), version })
+    }
 }
 
 // https://nodejs.org/dist/index.json
 #[tokio::main]
-async fn get_index_json() -> Result<Vec<version_info>, Box<dyn Error>> {
+async fn get_index_json() -> Result<Vec<Version_info>, Box<dyn Error>> {
     let res = reqwest::get("https://nodejs.org/dist/index.json")
     .await?
-    .json::<Vec<version_info>>()
+    .json::<Vec<Version_info>>()
     .await?;
     Ok(res)
 }
@@ -27,6 +47,8 @@ pub fn install(config: Config) -> Result<(), Box<dyn Error>> {
     if version.as_str() < "4" {
         return Err("支持nodejs最低版本为4.0.0".into())
     }
+    let version_number = Version_number::parse(version)?;
+
     let version_infos = get_index_json()?;
     Ok(())
 }
