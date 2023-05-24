@@ -1,7 +1,18 @@
+use std::error::Error;
+
 use crate::Config;
 
-pub fn install(config: Config) {
+// https://nodejs.org/dist/index.json
+#[tokio::get_index_json]
+async fn get_index_json() -> Result<(), Box<dyn, Error>> {
+    let res = reqwest::get("https://nodejs.org/dist/index.json")
+    .await?;
 
+    println!("{res}");
+}
+
+pub fn install(config: Config) {
+    get_index_json();
 }
 
 // remove
