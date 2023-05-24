@@ -1,18 +1,34 @@
 use std::error::Error;
+use serde::{Deserialize};
 
 use crate::Config;
 
-// https://nodejs.org/dist/index.json
-#[tokio::get_index_json]
-async fn get_index_json() -> Result<(), Box<dyn, Error>> {
-    let res = reqwest::get("https://nodejs.org/dist/index.json")
-    .await?;
-
-    println!("{res}");
+#[derive(Debug, Deserialize)]
+struct version_info {
+    version: String,
 }
 
-pub fn install(config: Config) {
-    get_index_json();
+// https://nodejs.org/dist/index.json
+#[tokio::main]
+async fn get_index_json() -> Result<Vec<version_info>, Box<dyn Error>> {
+    let res = reqwest::get("https://nodejs.org/dist/index.json")
+    .await?
+    .json::<Vec<version_info>>()
+    .await?;
+    Ok(res)
+}
+
+pub fn install(config: Config) -> Result<(), Box<dyn Error>> {
+    // 第二个参数 版本号
+    let version = match config.param2 {
+        Some(v) => v,
+        None => return Err("版本号不存在".into())
+    };
+    if version.as_str() < "4" {
+        return Err("支持nodejs最低版本为4.0.0".into())
+    }
+    let version_infos = get_index_json()?;
+    Ok(())
 }
 
 // remove

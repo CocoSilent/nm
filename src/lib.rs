@@ -35,7 +35,7 @@ impl Config {
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     if config.param1 == "install" {
-        nodejs_api::install(config);
+        nodejs_api::install(config)?;
         Ok(())
     } else {
         println!("{}命令不支持", config.param1);
