@@ -12,9 +12,6 @@ struct Version_info {
 // 版本号
 #[derive(Debug)]
 struct Version_number {
-    one: String,
-    two: String,
-    three: String,
     version: String,
     len: usize,
 }
@@ -26,13 +23,13 @@ impl Version_number {
             let str = format!("版本号：{version},格式不正确");
             return Err(str);
         }
-        if arr[0] < "4" {
+        let major = arr[0].parse::<i32>().unwrap_or_else(op);
+
+
+        if major < 4 {
             return Err("支持nodejs最低版本为4.0.0".into())
         }
         Ok(Version_number { 
-            one: arr[0].to_string(),
-            two: arr[1].to_string(),
-            three: arr[2].to_string(),
             len: arr.len(),
             version: version,
         })
@@ -133,19 +130,22 @@ pub fn install(config: Config) -> Result<(), Box<dyn Error>> {
     // 第二个参数 版本号
     let version = match config.param2 {
         Some(v) => v,
-        None => return Err("版本号不存在".into())
+        None => return Err("请输入版本号".into())
     };
     let version_number = Version_number::parse(version)?;
     println!("{:?}",version_number);
     let version_infos = get_index_json()?;
     // todo 版本号 1 2 3位分别匹配， 暂时先按整体来算了
-    let v = format!("v{}", version_number.version);
+    let match_v = format!("v{}", version_number.version);
+    let mut v = String::new();
     for version_info in version_infos {
-        if version_info.version.starts_with(&v) {
+        if version_info.version.starts_with(&match_v) {
             println!("{}", &version_number.version);
+            v = version_info.version;
             break;
         }
     }
+    println!("即将下载的版本是:{}", v);
     // 下载
     let file_name = format!("{v}.zip");
     let url = format!("https://nodejs.org/dist/{v}/node-{v}-win-x64.zip");
@@ -189,7 +189,7 @@ pub fn _use(config: Config) {
 
 // v
 pub fn version(config: Config) {
-
+    println!("当前版本是：0.0.1")
 }
 
 
