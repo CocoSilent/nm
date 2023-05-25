@@ -151,6 +151,7 @@ pub fn install(config: Config) -> Result<(), Box<dyn Error>> {
     let url = format!("https://nodejs.org/dist/{v}/node-{v}-win-x64.zip");
     download(&url, &file_name)?;
     unzip(&file_name);
+    println!("安装完成：{v}");
     // 解压
     Ok(())
 }
