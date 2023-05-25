@@ -173,7 +173,7 @@ pub fn _use(config: Config) {
     };
     let output = if cfg!(target_os = "windows") {
         Command::new("cmd")
-                .args(["/C", "mklink", "/J", "nodejs", "v9.6.1"])
+                .args(["/C", "mklink", "/J", "nodejs", &("v".to_owned() + &version) ])
                 .output()
                 .expect("创建目录链接失败")
     } else {
