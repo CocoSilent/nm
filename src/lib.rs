@@ -37,6 +37,9 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     if config.param1 == "install" {
         nodejs_api::install(config)?;
         Ok(())
+    } else if config.param1 == "use" {
+        nodejs_api::_use(config);
+        Ok(())
     } else {
         println!("{}命令不支持", config.param1);
         Ok(())

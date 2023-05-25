@@ -1,4 +1,4 @@
-use std::{error::Error, path::Path, fs, io::{Write, self}};
+use std::{error::Error, path::Path, fs, io::{Write, self}, process::Command, str::FromStr};
 use serde::{Deserialize};
 
 use crate::Config;
@@ -167,7 +167,23 @@ pub fn ls(config: Config) {
 }
 
 pub fn _use(config: Config) {
-
+    let version = match config.param2 {
+        Some(v) => v,
+        None => return (),
+    };
+    let output = if cfg!(target_os = "windows") {
+        Command::new("cmd")
+                .args(["/C", "mklink", "/J", "nodejs", "v9.6.1"])
+                .output()
+                .expect("创建目录链接失败")
+    } else {
+        Command::new("sh")
+                .arg("-c")
+                .arg("echo hello")
+                .output()
+                .expect("failed to execute process")
+    };
+    println!("status: {}", output.status);
 }
 
 // v
