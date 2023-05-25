@@ -1,4 +1,4 @@
-use std::{error::Error, path::Path, fs::File, io::Write};
+use std::{error::Error, path::Path, fs, io::{Write, self}};
 use serde::{Deserialize};
 
 use crate::Config;
@@ -58,13 +58,75 @@ async fn download(url: &String, file_name: &String) -> Result<(), Box<dyn Error>
     .await?;
 
     let path = Path::new(file_name);
-    let mut file = match File::create(&path) {
+    let mut file = match fs::File::create(&path) {
         Err(why) => panic!("couldn't create {}", why),
         Ok(file) => file,
     };
     file.write_all(&res)?;
 
     Ok(())
+}
+
+fn unzip(zipName: &String) -> i32 {
+    let fname = std::path::Path::new(zipName);
+    let file = fs::File::open(fname).unwrap();
+
+    let mut archive = zip::ZipArchive::new(file).unwrap();
+    let mut root_path = String::new();
+    for i in 0..archive.len() {
+        let mut file = archive.by_index(i).unwrap();
+        let outpath = match file.enclosed_name() {
+            Some(path) => path.to_owned(),
+            None => continue,
+        };
+        if i==0 {
+            root_path = outpath.clone().into_os_string().into_string().unwrap();
+        }
+
+        // {
+        //     // 文件注释
+        //     let comment = file.comment();
+        //     if !comment.is_empty() {
+        //         println!("File {i} comment: {comment}");
+        //     }
+        // }
+
+        if (*file.name()).ends_with('/') {
+            // println!("File {} extracted to \"{}\"", i, outpath.display());
+            fs::create_dir_all(&outpath).unwrap();
+        } else {
+            // println!(
+            //     "File {} extracted to \"{}\" ({} bytes)",
+            //     i,
+            //     outpath.display(),
+            //     file.size()
+            // );
+            if let Some(p) = outpath.parent() {
+                if !p.exists() {
+                    fs::create_dir_all(p).unwrap();
+                }
+            }
+            let mut outfile = fs::File::create(&outpath).unwrap();
+            io::copy(&mut file, &mut outfile).unwrap();
+        }
+
+        // Get and Set permissions
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+
+            if let Some(mode) = file.unix_mode() {
+                fs::set_permissions(&outpath, fs::Permissions::from_mode(mode)).unwrap();
+            }
+        }
+    }
+    // 去掉后缀
+    let new_path = zipName.replace(".zip", "");
+    if &root_path != "" {
+        fs::rename(root_path, new_path).unwrap();
+    }
+    
+    0
 }
 
 pub fn install(config: Config) -> Result<(), Box<dyn Error>> {
@@ -88,6 +150,7 @@ pub fn install(config: Config) -> Result<(), Box<dyn Error>> {
     let file_name = format!("{v}.zip");
     let url = format!("https://nodejs.org/dist/{v}/node-{v}-win-x64.zip");
     download(&url, &file_name)?;
+    unzip(&file_name);
     // 解压
     Ok(())
 }
