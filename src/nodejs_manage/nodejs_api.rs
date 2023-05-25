@@ -184,6 +184,7 @@ pub fn _use(config: Config) {
                 .expect("failed to execute process")
     };
     println!("status: {}", output.status);
+    println!("nm use的结果是{}", String::from_utf8_lossy(&output.stdout));
 }
 
 // v
