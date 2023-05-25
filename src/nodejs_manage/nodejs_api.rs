@@ -1,4 +1,4 @@
-use std::error::Error;
+use std::{error::Error, path::Path, fs::File, io::Write};
 use serde::{Deserialize};
 
 use crate::Config;
@@ -49,6 +49,24 @@ async fn get_index_json() -> Result<Vec<Version_info>, Box<dyn Error>> {
     Ok(res)
 }
 
+// 下载文件
+#[tokio::main]
+async fn download(url: &String, file_name: &String) -> Result<(), Box<dyn Error>> {
+    let res = reqwest::get(url)
+    .await?
+    .bytes()
+    .await?;
+
+    let path = Path::new(file_name);
+    let mut file = match File::create(&path) {
+        Err(why) => panic!("couldn't create {}", why),
+        Ok(file) => file,
+    };
+    file.write_all(&res)?;
+
+    Ok(())
+}
+
 pub fn install(config: Config) -> Result<(), Box<dyn Error>> {
     // 第二个参数 版本号
     let version = match config.param2 {
@@ -66,7 +84,11 @@ pub fn install(config: Config) -> Result<(), Box<dyn Error>> {
             break;
         }
     }
-    // https://nodejs.org/dist/v9.11.2/node-v9.11.2-win-x64.zip
+    // 下载
+    let file_name = format!("{v}.zip");
+    let url = format!("https://nodejs.org/dist/{v}/node-{v}-win-x64.zip");
+    download(&url, &file_name)?;
+    // 解压
     Ok(())
 }
 
