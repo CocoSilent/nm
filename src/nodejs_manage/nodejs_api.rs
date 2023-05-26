@@ -23,8 +23,14 @@ impl Version_number {
             let str = format!("版本号：{version},格式不正确");
             return Err(str);
         }
-        let major = arr[0].parse::<i32>().unwrap_or_else(op);
 
+        let major = match arr[0].parse::<i32>()  {
+            Ok(x) => x,
+            Err(e) => {
+                let str = format!("版本号：{version},第一位格式不正确");
+                return Err(str)
+            },
+        };
 
         if major < 4 {
             return Err("支持nodejs最低版本为4.0.0".into())
