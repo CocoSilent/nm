@@ -139,10 +139,11 @@ pub fn install(config: Config) -> Result<(), Box<dyn Error>> {
         None => return Err("请输入版本号".into())
     };
     let version_number = Version_number::parse(version)?;
-    println!("{:?}",version_number);
     let version_infos = get_index_json()?;
-    // todo 版本号 1 2 3位分别匹配， 暂时先按整体来算了
-    let match_v = format!("v{}", version_number.version);
+    let mut match_v = format!("v{}", version_number.version);
+    if version_number.len < 3 {
+        match_v = match_v + ".";
+    }
     let mut v = String::new();
     for version_info in version_infos {
         if version_info.version.starts_with(&match_v) {
