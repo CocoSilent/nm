@@ -190,8 +190,14 @@ pub fn _use(config: Config) {
                 .output()
                 .expect("failed to execute process")
     };
-    println!("status: {}", output.status);
-    println!("nm use的结果是{}", String::from_utf8_lossy(&output.stdout));
+    // println!("status: {}", output.status);
+    let code = output.status.code().unwrap();
+    if code == 0 {
+        println!("设置成功，当前版本是：{version}")
+    } else {
+        println!("设置失败")
+    }
+    // println!("nm use的结果是{}", String::from_utf8_lossy(&output.stdout));
 }
 
 // v
