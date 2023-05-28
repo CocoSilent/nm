@@ -49,6 +49,9 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     } else if config.param1 == "use" {
         nodejs_api::_use(config)?;
         Ok(())
+    } else if config.param1 == "ls" || config.param1 == "list" {
+        nodejs_api::ls()?;
+        Ok(())
     }  else if config.param1 == "v" || config.param1 == "version" {
         nodejs_api::version();
         Ok(())

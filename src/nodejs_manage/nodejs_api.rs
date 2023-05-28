@@ -183,12 +183,20 @@ pub fn install(config: Config) -> Result<(), Box<dyn Error>> {
 
 // remove
 pub fn uninstall(config: Config) {
-
 }
 
 // list
-pub fn ls(config: Config) {
-    // https://nodejs.org/dist/index.json
+pub fn ls() -> Result<(), Box<dyn Error>> {
+    let content = fs::read_to_string(CONFIG_PATH)?;
+    let mut config_json: ConfigJson = serde_json::from_str(&content)?;
+    if config_json.installed.len() == 0 {
+        println!("当前没有安装任何版本")
+    } else {
+        for v in config_json.installed  {
+            println!("{v}");
+        }
+    }
+    Ok(())
 }
 
 pub fn _use(config: Config) -> Result<(), Box<dyn Error>> {
@@ -198,7 +206,7 @@ pub fn _use(config: Config) -> Result<(), Box<dyn Error>> {
         None => return Err("请输入版本号".into())
     };
     let version_number = VersionNumber::parse(version)?;
-    if (version_number.len != 3) {
+    if version_number.len != 3 {
         return Err("请输入完整的版本号".into());
     }
     let v_version = "v".to_owned() + &version_number.version;
