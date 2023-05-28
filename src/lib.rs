@@ -23,7 +23,7 @@ impl Config {
         };
         let param1 = match args.next() {
             Some(arg) => arg,
-            None => return Err("param1获取失败"),
+            None => return Err("命令获取失败"),
         };
         let param2 = args.next();
         // let param3 = args.next();
