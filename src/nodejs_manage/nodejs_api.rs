@@ -238,7 +238,7 @@ pub fn _use(config: Config) -> Result<(), Box<dyn Error>> {
 }
 
 // v
-pub fn version(config: Config) {
+pub fn version() {
     println!("当前版本是：0.0.1")
 }
 

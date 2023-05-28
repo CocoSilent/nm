@@ -50,7 +50,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
         nodejs_api::_use(config)?;
         Ok(())
     }  else if config.param1 == "v" || config.param1 == "version" {
-        nodejs_api::version(config);
+        nodejs_api::version();
         Ok(())
     } else {
         println!("{}命令不支持", config.param1);
