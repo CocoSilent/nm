@@ -191,14 +191,30 @@ pub fn ls(config: Config) {
     // https://nodejs.org/dist/index.json
 }
 
-pub fn _use(config: Config) {
+pub fn _use(config: Config) -> Result<(), Box<dyn Error>> {
+    // 第二个参数 版本号
     let version = match config.param2 {
         Some(v) => v,
-        None => return (),
+        None => return Err("请输入版本号".into())
     };
+    let version_number = VersionNumber::parse(version)?;
+    if (version_number.len != 3) {
+        return Err("请输入完整的版本号".into());
+    }
+    let v_version = "v".to_owned() + &version_number.version;
+    // 确认版本是否存在
+    if !Path::exists(Path::new(&v_version)) {
+        return Err(format!("此版本{}未安装", &version_number.version).into());
+    }
+    // 确认是否已设置
+    let content = fs::read_to_string(CONFIG_PATH)?;
+    let mut config_json: ConfigJson = serde_json::from_str(&content)?;
+    if config_json.used_version == v_version {
+        return Err(format!("当前正在使用版本{}，无需重复设置", &version_number.version).into());
+    }
     let output = if cfg!(target_os = "windows") {
         Command::new("cmd")
-                .args(["/C", "mklink", "/J", "nodejs", &("v".to_owned() + &version) ])
+                .args(["/C", "mklink", "/J", "nodejs", &v_version ])
                 .output()
                 .expect("创建目录链接失败")
     } else {
@@ -206,16 +222,19 @@ pub fn _use(config: Config) {
                 .arg("-c")
                 .arg("echo hello")
                 .output()
-                .expect("failed to execute process")
+                .expect("创建目录链接失败")
     };
-    // println!("status: {}", output.status);
     let code = output.status.code().unwrap();
     if code == 0 {
-        println!("设置成功，当前版本是：{version}")
+        config_json.used_version = v_version.clone();
+        let content = serde_json::to_string_pretty(&config_json)?;
+        let mut f = fs::File::create(CONFIG_PATH)?;
+        f.write_all(content.as_bytes())?;
+        println!("设置成功，当前版本是：{}", &v_version);
+        Ok(())
     } else {
-        println!("设置失败")
+        return Err("设置失败".into());
     }
-    // println!("nm use的结果是{}", String::from_utf8_lossy(&output.stdout));
 }
 
 // v

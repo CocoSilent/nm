@@ -47,7 +47,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
         nodejs_api::install(config)?;
         Ok(())
     } else if config.param1 == "use" {
-        nodejs_api::_use(config);
+        nodejs_api::_use(config)?;
         Ok(())
     }  else if config.param1 == "v" || config.param1 == "version" {
         nodejs_api::version(config);

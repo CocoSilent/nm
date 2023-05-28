@@ -6,7 +6,7 @@ fn main() {
         std::process::exit(1);
     });
     if let Err(err) = run(config) {
-        eprintln!("执行命令发生错误：{err}");
+        eprintln!("{err}");
         std::process::exit(1);
     }
 }
