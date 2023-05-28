@@ -1,4 +1,4 @@
-use std::{error::Error, path::Path, fs, io::{Write, self}, process::Command, str::FromStr};
+use std::{error::Error, path::Path, fs, io::{Write, self}, process::Command};
 use serde::{Deserialize};
 
 use crate::Config;
@@ -26,7 +26,7 @@ impl VersionNumber {
 
         let major = match arr[0].parse::<i32>()  {
             Ok(x) => x,
-            Err(e) => {
+            Err(_e) => {
                 let str = format!("版本号：{version},第一位格式不正确");
                 return Err(str)
             },
@@ -70,8 +70,8 @@ async fn download(url: &String, file_name: &String) -> Result<(), Box<dyn Error>
     Ok(())
 }
 
-fn unzip(zipName: &String) -> i32 {
-    let fname = std::path::Path::new(zipName);
+fn unzip(zip_name: &String) -> i32 {
+    let fname = std::path::Path::new(zip_name);
     let file = fs::File::open(fname).unwrap();
 
     let mut archive = zip::ZipArchive::new(file).unwrap();
@@ -124,7 +124,7 @@ fn unzip(zipName: &String) -> i32 {
         }
     }
     // 去掉后缀
-    let new_path = zipName.replace(".zip", "");
+    let new_path = zip_name.replace(".zip", "");
     if &root_path != "" {
         fs::rename(root_path, new_path).unwrap();
     }
