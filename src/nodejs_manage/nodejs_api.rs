@@ -272,8 +272,7 @@ pub fn _use(config: Config) -> Result<(), Box<dyn Error>> {
                 .expect("创建目录链接失败")
     } else {
         Command::new("sh")
-                .arg("-c")
-                .arg("echo hello")
+                .args(["-c", "ln", "-s", "nodejs", &v_version ])
                 .output()
                 .expect("创建目录链接失败")
     };
