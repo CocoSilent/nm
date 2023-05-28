@@ -182,13 +182,43 @@ pub fn install(config: Config) -> Result<(), Box<dyn Error>> {
 }
 
 // remove
-pub fn uninstall(config: Config) {
+pub fn uninstall(config: Config) -> Result<(), Box<dyn Error>> {
+    // 第二个参数 版本号
+    let version = match config.param2 {
+        Some(v) => v,
+        None => return Err("请输入版本号".into())
+    };
+    let version_number = VersionNumber::parse(version)?;
+    if version_number.len != 3 {
+        return Err("请输入完整的版本号".into());
+    }
+    let v_version = "v".to_owned() + &version_number.version;
+    // 确认版本是否存在
+    if !Path::exists(Path::new(&v_version)) {
+        return Err(format!("此版本{}未安装", &version_number.version).into());
+    }
+    // 确认是否已设置
+    let content = fs::read_to_string(CONFIG_PATH)?;
+    let mut config_json: ConfigJson = serde_json::from_str(&content)?;
+    if config_json.used_version == v_version {
+        // 符号链接也要删除
+        fs::remove_dir_all("nodejs/")?;
+        config_json.used_version = "".to_string();
+    }
+    config_json.installed.retain(|v| v != &v_version);
+    let content = serde_json::to_string_pretty(&config_json)?;
+    let mut f = fs::File::create(CONFIG_PATH)?;
+    f.write_all(content.as_bytes())?;
+
+    fs::remove_dir_all(&v_version)?;
+    println!("{v_version}已卸载成功");
+    Ok(())
 }
 
 // list
 pub fn ls() -> Result<(), Box<dyn Error>> {
     let content = fs::read_to_string(CONFIG_PATH)?;
-    let mut config_json: ConfigJson = serde_json::from_str(&content)?;
+    let config_json: ConfigJson = serde_json::from_str(&content)?;
     if config_json.installed.len() == 0 {
         println!("当前没有安装任何版本")
     } else {
