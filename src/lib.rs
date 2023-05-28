@@ -41,7 +41,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let path = Path::new(CONFIG_PATH);
     if !path.exists() {
         let mut f = fs::File::create(CONFIG_PATH)?;
-        f.write_all("{}".as_bytes())?;
+        f.write_all("{\"used_version\":\"\",\"installed\":[]}".as_bytes())?;
     }
     if config.param1 == "install" {
         nodejs_api::install(config)?;

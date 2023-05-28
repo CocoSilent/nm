@@ -1,7 +1,7 @@
 use std::{error::Error, path::Path, fs, io::{Write, self}, process::Command};
 use serde::{Deserialize};
 
-use crate::Config;
+use crate::{Config, CONFIG_PATH};
 
 #[derive(Debug, Deserialize)]
 // https://nodejs.org/dist/index.json返回的结构
@@ -14,6 +14,13 @@ struct VersionInfo {
 struct VersionNumber {
     version: String,
     len: usize,
+}
+
+// 配置结构
+#[derive(Debug, Deserialize)]
+struct ConfigJson {
+    used_version: String,
+    installed: Vec<String>
 }
 
 impl VersionNumber {
@@ -126,7 +133,11 @@ fn unzip(zip_name: &String) -> i32 {
     // 去掉后缀
     let new_path = zip_name.replace(".zip", "");
     if &root_path != "" {
-        fs::rename(root_path, new_path).unwrap();
+        if Path::exists(Path::new(&new_path)) {
+            fs::remove_dir_all(&new_path).unwrap();
+        }
+        fs::rename(&root_path, &new_path).unwrap();
+        fs::remove_file(zip_name).unwrap();
     }
     
     0
@@ -158,6 +169,10 @@ pub fn install(config: Config) -> Result<(), Box<dyn Error>> {
     let url = format!("https://nodejs.org/dist/{v}/node-{v}-win-x64.zip");
     download(&url, &file_name)?;
     unzip(&file_name);
+    let content = fs::read_to_string(CONFIG_PATH)?;
+    println!("constent={content}");
+    let config_json: ConfigJson = serde_json::from_str(&content)?;
+    println!("xxxx={:?}", config_json);
     println!("安装完成：{v}");
     // 解压
     Ok(())
