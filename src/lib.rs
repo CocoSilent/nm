@@ -1,6 +1,6 @@
 mod nodejs_manage;
 
-use std::error::Error;
+use std::{error::Error, path::Path, fs, io::Write};
 
 use nodejs_manage::nodejs_api;
 
@@ -10,6 +10,9 @@ pub struct Config {
     param2: Option<String>,
     param3: Option<String>,
 }
+
+pub const CONFIG_PATH: &str = "./config.json";
+
 
 impl Config {
     pub fn build(mut args : impl Iterator<Item = String>) -> Result<Config, &'static str> {
@@ -34,6 +37,12 @@ impl Config {
 }
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
+    // 检查是否有config目录，没有则创建
+    let path = Path::new(CONFIG_PATH);
+    if !path.exists() {
+        let mut f = fs::File::create(CONFIG_PATH)?;
+        f.write_all("{}".as_bytes())?;
+    }
     if config.param1 == "install" {
         nodejs_api::install(config)?;
         Ok(())
