@@ -5,19 +5,19 @@ use crate::Config;
 
 #[derive(Debug, Deserialize)]
 // https://nodejs.org/dist/index.json返回的结构
-struct Version_info {
+struct VersionInfo {
     version: String,
 }
 
 // 版本号
 #[derive(Debug)]
-struct Version_number {
+struct VersionNumber {
     version: String,
     len: usize,
 }
 
-impl Version_number {
-    fn parse<'a>(version: String) -> Result<Version_number, String> {
+impl VersionNumber {
+    fn parse<'a>(version: String) -> Result<VersionNumber, String> {
         let arr: Vec<_> = version.split('.').collect();
         if arr.len() > 3 {
             let str = format!("版本号：{version},格式不正确");
@@ -35,7 +35,7 @@ impl Version_number {
         if major < 4 {
             return Err("支持nodejs最低版本为4.0.0".into())
         }
-        Ok(Version_number { 
+        Ok(VersionNumber { 
             len: arr.len(),
             version: version,
         })
@@ -44,10 +44,10 @@ impl Version_number {
 
 // https://nodejs.org/dist/index.json
 #[tokio::main]
-async fn get_index_json() -> Result<Vec<Version_info>, Box<dyn Error>> {
+async fn get_index_json() -> Result<Vec<VersionInfo>, Box<dyn Error>> {
     let res = reqwest::get("https://nodejs.org/dist/index.json")
     .await?
-    .json::<Vec<Version_info>>()
+    .json::<Vec<VersionInfo>>()
     .await?;
     Ok(res)
 }
@@ -138,7 +138,7 @@ pub fn install(config: Config) -> Result<(), Box<dyn Error>> {
         Some(v) => v,
         None => return Err("请输入版本号".into())
     };
-    let version_number = Version_number::parse(version)?;
+    let version_number = VersionNumber::parse(version)?;
     let version_infos = get_index_json()?;
     let mut match_v = format!("v{}", version_number.version);
     if version_number.len < 3 {
