@@ -233,6 +233,17 @@ pub fn ls() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+pub fn current() -> Result<(), Box<dyn Error>> {
+    let content = fs::read_to_string(CONFIG_PATH)?;
+    let config_json: ConfigJson = serde_json::from_str(&content)?;
+    if config_json.used_version == "" {
+        println!("当前使用任何版本，请使用:nm use x.x.x")
+    } else {
+        println!("{}", &config_json.used_version[1..])
+    }
+    Ok(())
+}
+
 pub fn _use(config: Config) -> Result<(), Box<dyn Error>> {
     // 第二个参数 版本号
     let version = match config.param2 {
