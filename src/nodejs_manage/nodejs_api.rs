@@ -1,5 +1,5 @@
 use std::{error::Error, path::Path, fs, io::{Write, self}, process::Command};
-use serde::{Deserialize};
+use serde::{Deserialize, Serialize};
 
 use crate::{Config, CONFIG_PATH};
 
@@ -17,7 +17,7 @@ struct VersionNumber {
 }
 
 // 配置结构
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 struct ConfigJson {
     used_version: String,
     installed: Vec<String>
@@ -158,7 +158,6 @@ pub fn install(config: Config) -> Result<(), Box<dyn Error>> {
     let mut v = String::new();
     for version_info in version_infos {
         if version_info.version.starts_with(&match_v) {
-            println!("{}", &version_number.version);
             v = version_info.version;
             break;
         }
@@ -170,10 +169,14 @@ pub fn install(config: Config) -> Result<(), Box<dyn Error>> {
     download(&url, &file_name)?;
     unzip(&file_name);
     let content = fs::read_to_string(CONFIG_PATH)?;
-    println!("constent={content}");
-    let config_json: ConfigJson = serde_json::from_str(&content)?;
-    println!("xxxx={:?}", config_json);
-    println!("安装完成：{v}");
+    let mut config_json: ConfigJson = serde_json::from_str(&content)?;
+    if !config_json.installed.contains(&v) {
+        config_json.installed.push(v.clone());
+        let content = serde_json::to_string_pretty(&config_json)?;
+        let mut f = fs::File::create(CONFIG_PATH)?;
+        f.write_all(content.as_bytes())?;
+    }
+    println!("安装完成：{}", &v);
     // 解压
     Ok(())
 }
