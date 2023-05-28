@@ -193,7 +193,11 @@ pub fn ls() -> Result<(), Box<dyn Error>> {
         println!("当前没有安装任何版本")
     } else {
         for v in config_json.installed  {
-            println!("{v}");
+            if v == config_json.used_version {
+                println!("{}  当前正在使用", &v[1..]);
+            } else {
+                println!("{}", &v[1..]); 
+            }
         }
     }
     Ok(())
