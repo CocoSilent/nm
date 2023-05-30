@@ -37,6 +37,9 @@ impl Config {
 }
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
+    let mut root = std::env::current_exe().unwrap();
+    root.pop();
+    std::env::set_current_dir(root);
     // 检查是否有config目录，没有则创建
     let path = Path::new(CONFIG_PATH);
     if !path.exists() {
