@@ -12,3 +12,9 @@ serde_json = "1.0.96"
 tokio = { version = "1", features = ["full"] }
 zip = "0.6.6"
 
+[profile.release]
+lto=true
+codegen-units=1
+panic="abort"
+strip=true
+
